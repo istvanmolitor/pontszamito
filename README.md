@@ -18,6 +18,8 @@ composer start
 Elérhető endpoint:
 
 - `GET http://127.0.0.1:8000/api/subjects`
+- `GET http://127.0.0.1:8000/api/health`
+- `POST http://127.0.0.1:8000/api/echo`
 
 ### 2) Frontend
 
