@@ -1,0 +1,16 @@
+{
+  "name": "pontszamito/backend",
+  "description": "Simple PHP API for subject listing",
+  "type": "project",
+  "require": {
+    "php": "^8.2"
+  },
+  "scripts": {
+    "start": "php -S 127.0.0.1:8000 -t public public/index.php"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
