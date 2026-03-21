@@ -6,17 +6,28 @@ namespace App\Controllers;
 
 use App\ApiResource;
 use App\Controller;
+use App\Enums\Language;
+use App\Enums\LanguageExamType;
 
 final class LanguageExamController extends Controller
 {
     public function index(): ApiResource
     {
         return $this->resource([
-            'languageExams' => [
-                ['id' => 1, 'language' => 'angol', 'level' => 'B2', 'type' => 'complex'],
-                ['id' => 2, 'language' => 'nemet', 'level' => 'B2', 'type' => 'complex'],
-                ['id' => 3, 'language' => 'francia', 'level' => 'C1', 'type' => 'complex'],
-            ],
+            'languages' => array_map(
+                fn (Language $language): array => [
+                    'value' => $language->value,
+                    'label' => $language->getLabel(),
+                ],
+                Language::cases(),
+            ),
+            'examTypes' => array_map(
+                fn (LanguageExamType $examType): array => [
+                    'value' => $examType->value,
+                    'label' => $examType->getLabel(),
+                ],
+                LanguageExamType::cases(),
+            ),
         ]);
     }
 }

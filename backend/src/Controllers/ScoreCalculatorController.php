@@ -32,10 +32,10 @@ final class ScoreCalculatorController extends Controller
         // Add language exams
         if (isset($data['languageExams']) && is_array($data['languageExams'])) {
             foreach ($data['languageExams'] as $exam) {
-                if (isset($exam['language'], $exam['examType'], $exam['evaluation'])) {
+                if (isset($exam['language'], $exam['examType'])) {
                     $calculator->addLanguageExam(
                         (string) $exam['language'],
-                        (string) $exam['evaluation'],
+                        (string) $exam['examType'],
                         (string) $exam['examType']
                     );
                 }

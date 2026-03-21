@@ -11,6 +11,14 @@ enum LanguageExamType: string
     case B2 = 'B2';
     case C2 = 'C2';
 
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::B2 => 'B2 (Középfok)',
+            self::C2 => 'C2 (Felsőfok)',
+        };
+    }
+
     public static function fromInput(string $input): self
     {
         return match (strtolower(trim($input))) {

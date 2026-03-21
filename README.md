@@ -18,8 +18,9 @@ composer start
 Elérhető endpoint:
 
 - `GET http://127.0.0.1:8000/api/subjects`
-- `GET http://127.0.0.1:8000/api/health`
-- `POST http://127.0.0.1:8000/api/echo`
+- `GET http://127.0.0.1:8000/api/exam-levels`
+- `GET http://127.0.0.1:8000/api/language-exams`
+- `POST http://127.0.0.1:8000/api/calculate`
 
 ### 2) Frontend
 

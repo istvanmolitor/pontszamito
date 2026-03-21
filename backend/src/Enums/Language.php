@@ -15,6 +15,18 @@ enum Language: string
     case ITALIAN = 'italian';
     case RUSSIAN = 'russian';
 
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::ENGLISH => 'Angol',
+            self::GERMAN => 'Német',
+            self::FRENCH => 'Francia',
+            self::SPANISH => 'Spanyol',
+            self::ITALIAN => 'Olasz',
+            self::RUSSIAN => 'Orosz',
+        };
+    }
+
     public static function fromInput(string $input): self
     {
         return match (strtolower(trim($input))) {

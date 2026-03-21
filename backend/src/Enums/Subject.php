@@ -16,9 +16,22 @@ enum Subject: string
     case INFORMATICS = 'informatika';
     case CHEMISTRY = 'kémia';
 
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::HUNGARIAN_LANGUAGE_AND_LITERATURE => 'Magyar nyelv és irodalom',
+            self::HISTORY => 'Történelem',
+            self::MATHEMATICS => 'Matematika',
+            self::PHYSICS => 'Fizika',
+            self::BIOLOGY => 'Biológia',
+            self::INFORMATICS => 'Informatika',
+            self::CHEMISTRY => 'Kémia',
+        };
+    }
+
     public static function fromInput(string $input): self
     {
-        return match (self::normalize($input)) {
+        return match ($input) {
             'magyar_nyelv_es_irodalom', 'magyar', 'hun101' => self::HUNGARIAN_LANGUAGE_AND_LITERATURE,
             'tortenelem', 'history', 'his101' => self::HISTORY,
             'matematika', 'math', 'mat101' => self::MATHEMATICS,
@@ -30,33 +43,5 @@ enum Subject: string
                 'Subject must be one of: magyar nyelv és irodalom, történelem, matematika, fizika, biológia, informatika, kémia.'
             ),
         };
-    }
-
-    private static function normalize(string $input): string
-    {
-        $normalized = strtr(trim($input), [
-            'á' => 'a',
-            'é' => 'e',
-            'í' => 'i',
-            'ó' => 'o',
-            'ö' => 'o',
-            'ő' => 'o',
-            'ú' => 'u',
-            'ü' => 'u',
-            'ű' => 'u',
-            'Á' => 'a',
-            'É' => 'e',
-            'Í' => 'i',
-            'Ó' => 'o',
-            'Ö' => 'o',
-            'Ő' => 'o',
-            'Ú' => 'u',
-            'Ü' => 'u',
-            'Ű' => 'u',
-        ]);
-
-        $normalized = strtolower($normalized);
-
-        return str_replace([' ', '-'], '_', $normalized);
     }
 }

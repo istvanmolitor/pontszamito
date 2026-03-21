@@ -11,6 +11,14 @@ enum ExamLevel: string
     case MIDDLE = 'middle';
     case ADVANCED = 'advanced';
 
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::MIDDLE => 'Középszint',
+            self::ADVANCED => 'Emelt szint',
+        };
+    }
+
     public static function fromInput(string $input): self
     {
         return match (strtolower(trim($input))) {

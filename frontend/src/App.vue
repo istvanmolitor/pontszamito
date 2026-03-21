@@ -2,6 +2,9 @@
 import { computed, onMounted, ref } from 'vue'
 
 const subjects = ref([])
+const subjectLevelOptions = ref([])
+const languageOptions = ref([])
+const examTypeOptions = ref([])
 const loading = ref(true)
 const error = ref('')
 const selectedSubjects = ref([])
@@ -18,7 +21,6 @@ const subjectForm = ref({
 const languageExamForm = ref({
   language: '',
   examType: 'B2',
-  evaluation: '',
 })
 
 const subjectOptions = computed(() => {
@@ -37,24 +39,6 @@ const subjectOptions = computed(() => {
     .filter(Boolean)
 
   return [...new Set(names)].sort((first, second) => first.localeCompare(second, 'hu'))
-})
-
-const languageOptions = computed(() => {
-  return [
-    { value: 'english', label: 'Angol' },
-    { value: 'german', label: 'Német' },
-    { value: 'french', label: 'Francia' },
-    { value: 'spanish', label: 'Spanyol' },
-    { value: 'italian', label: 'Olasz' },
-    { value: 'russian', label: 'Orosz' },
-  ]
-})
-
-const examTypeOptions = computed(() => {
-  return [
-    { value: 'B2', label: 'B2 (Középfok)' },
-    { value: 'C2', label: 'C2 (Felsőfok)' },
-  ]
 })
 
 function normalizeBaseUrl(value) {
@@ -82,48 +66,92 @@ function buildApiBaseUrls() {
   return [...new Set(candidates.map(normalizeBaseUrl))]
 }
 
-async function loadSubjects() {
-  loading.value = true
-  error.value = ''
+async function fetchApiJson(path, requestInit) {
   const baseUrls = buildApiBaseUrls()
   let lastError = null
 
   for (const baseUrl of baseUrls) {
     try {
-      const endpoint = baseUrl ? `${baseUrl}/api/subjects` : '/api/subjects'
-      const response = await fetch(endpoint)
+      const endpoint = baseUrl ? `${baseUrl}${path}` : path
+      const response = await fetch(endpoint, requestInit)
 
       if (!response.ok) {
-        throw new Error(`Hiba a lekérés során: ${response.status}`)
+        lastError = new Error(`Hiba a lekérés során: ${response.status}`)
+        continue
       }
 
-      const data = await response.json()
-      subjects.value = data.subjects || []
-      loading.value = false
-      return
+      return await response.json()
     } catch (e) {
       lastError = e
     }
   }
 
-  if (lastError instanceof TypeError) {
-    error.value =
-      'Nem érhető el a backend API. Indítsd el a backendet: "cd backend && composer start".'
-  } else {
-    error.value =
-      lastError instanceof Error ? lastError.message : 'Ismeretlen hiba történt.'
+  throw lastError ?? new Error('Ismeretlen hiba történt.')
+}
+
+function getOptionLabel(options, value, fallback = value) {
+  const option = options.find((item) => item.value === value)
+  return option ? option.label : fallback
+}
+
+function syncFormDefaults() {
+  if (!subjectLevelOptions.value.some((option) => option.value === subjectForm.value.level)) {
+    subjectForm.value.level = subjectLevelOptions.value[0]?.value ?? ''
   }
 
-  loading.value = false
+  if (!languageOptions.value.some((option) => option.value === languageExamForm.value.language)) {
+    languageExamForm.value.language = ''
+  }
+
+  if (!examTypeOptions.value.some((option) => option.value === languageExamForm.value.examType)) {
+    languageExamForm.value.examType = examTypeOptions.value[0]?.value ?? ''
+  }
+}
+
+async function loadOptions() {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const [subjectData, examLevelData, languageExamData] = await Promise.all([
+      fetchApiJson('/api/subjects'),
+      fetchApiJson('/api/exam-levels'),
+      fetchApiJson('/api/language-exams'),
+    ])
+
+    subjects.value = Array.isArray(subjectData.subjects) ? subjectData.subjects : []
+    subjectLevelOptions.value = Array.isArray(examLevelData.levels) ? examLevelData.levels : []
+    languageOptions.value = Array.isArray(languageExamData.languages)
+      ? languageExamData.languages
+      : []
+    examTypeOptions.value = Array.isArray(languageExamData.examTypes)
+      ? languageExamData.examTypes
+      : []
+
+    syncFormDefaults()
+  } catch (lastError) {
+    if (lastError instanceof TypeError) {
+      error.value =
+        'Nem érhető el a backend API. Indítsd el a backendet: "cd backend && composer start".'
+    } else {
+      error.value =
+        lastError instanceof Error ? lastError.message : 'Ismeretlen hiba történt.'
+    }
+  } finally {
+    loading.value = false
+  }
 }
 
 function formatLevel(level) {
-  return level === 'advanced' ? 'Emelt szint' : 'Középszint'
+  return getOptionLabel(subjectLevelOptions.value, level, level)
 }
 
 function getLanguageLabel(languageValue) {
-  const option = languageOptions.value.find((opt) => opt.value === languageValue)
-  return option ? option.label : languageValue
+  return getOptionLabel(languageOptions.value, languageValue, languageValue)
+}
+
+function getExamTypeLabel(examTypeValue) {
+  return getOptionLabel(examTypeOptions.value, examTypeValue, examTypeValue)
 }
 
 function closeSubjectModal() {
@@ -152,6 +180,11 @@ function addSubjectForCalculation() {
     return
   }
 
+  if (!subjectForm.value.level) {
+    formError.value = 'Válassz szintet a legördülőből.'
+    return
+  }
+
   selectedSubjects.value.push({
     name,
     level: subjectForm.value.level,
@@ -163,6 +196,7 @@ function addSubjectForCalculation() {
     level: 'middle',
     evaluation: '',
   }
+  syncFormDefaults()
 
   formSuccess.value = 'A tantárgy bekerült a pontszámításhoz.'
   showSubjectModal.value = false
@@ -184,23 +218,21 @@ function addLanguageExamForCalculation() {
     return
   }
 
-  const evaluation = Number(languageExamForm.value.evaluation)
-  if (!Number.isInteger(evaluation) || evaluation < 0 || evaluation > 100) {
-    formError.value = 'Az értékelés csak 0 és 100 közötti egész szám lehet.'
+  if (!languageExamForm.value.examType) {
+    formError.value = 'Válassz nyelvvizsga-szintet a legördülőből.'
     return
   }
 
   selectedLanguageExams.value.push({
     language,
     examType: languageExamForm.value.examType,
-    evaluation,
   })
 
   languageExamForm.value = {
     language: '',
     examType: 'B2',
-    evaluation: '',
   }
+  syncFormDefaults()
 
   formSuccess.value = 'A nyelvvizsga bekerült a pontszámításhoz.'
   showLanguageExamModal.value = false
@@ -222,49 +254,29 @@ async function calculateScore() {
   }
 
   try {
-    const baseUrls = buildApiBaseUrls()
-    let lastError = null
+    const data = await fetchApiJson('/api/calculate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subjects: selectedSubjects.value,
+        languageExams: selectedLanguageExams.value,
+      }),
+    })
 
-    for (const baseUrl of baseUrls) {
-      try {
-        const endpoint = baseUrl ? `${baseUrl}/api/calculate` : '/api/calculate'
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            subjects: selectedSubjects.value,
-            languageExams: selectedLanguageExams.value,
-          }),
-        })
-
-        if (!response.ok) {
-          throw new Error(`Hiba a pontszámítás során: ${response.status}`)
-        }
-
-        const data = await response.json()
-        formSuccess.value = 'A pontszámítás sikeres volt!'
-        console.log('Pontszámítás eredménye:', data)
-        return
-      } catch (e) {
-        lastError = e
-      }
-    }
-
-    if (lastError instanceof TypeError) {
+    formSuccess.value = 'A pontszámítás sikeres volt!'
+    console.log('Pontszámítás eredménye:', data)
+  } catch (e) {
+    if (e instanceof TypeError) {
       formError.value = 'Nem érhető el a backend API.'
     } else {
-      formError.value =
-        lastError instanceof Error ? lastError.message : 'Ismeretlen hiba történt.'
+      formError.value = e instanceof Error ? e.message : 'Hiba a pontszámítás során.'
     }
-  } catch (e) {
-    formError.value = 'Hiba a pontszámítás során.'
-    console.error(e)
   }
 }
 
-onMounted(loadSubjects)
+onMounted(loadOptions)
 </script>
 
 <template>
@@ -322,13 +334,12 @@ onMounted(loadSubjects)
         <ul v-else class="subject-list">
           <li
             v-for="(languageExam, index) in selectedLanguageExams"
-            :key="`${languageExam.language}-${languageExam.examType}-${languageExam.evaluation}-${index}`"
+            :key="`${languageExam.language}-${languageExam.examType}-${index}`"
             class="subject-item"
           >
             <div>
               <strong>{{ getLanguageLabel(languageExam.language) }}</strong>
-              <small>{{ languageExam.examType }}</small>
-              <div style="margin-top: 4px; font-size: 0.9em; color: #666;">Értékelés: {{ languageExam.evaluation }}%</div>
+              <small>{{ getExamTypeLabel(languageExam.examType) }}</small>
             </div>
             <div class="subject-actions">
               <button
@@ -372,8 +383,9 @@ onMounted(loadSubjects)
             <label class="field">
               <span>Szint</span>
               <select v-model="subjectForm.level">
-                <option value="middle">Középszint</option>
-                <option value="advanced">Emelt szint</option>
+                <option v-for="level in subjectLevelOptions" :key="level.value" :value="level.value">
+                  {{ level.label }}
+                </option>
               </select>
             </label>
 
@@ -392,6 +404,10 @@ onMounted(loadSubjects)
 
             <p v-if="!subjectOptions.length" class="note">
               Jelenleg nincs választható tantárgy, mert a backend nem adott vissza listát.
+            </p>
+
+            <p v-if="!subjectLevelOptions.length" class="note">
+              Jelenleg nincs választható szint, mert a backend nem adott vissza listát.
             </p>
 
             <p v-if="formError" class="error">{{ formError }}</p>
@@ -435,20 +451,15 @@ onMounted(loadSubjects)
               </select>
             </label>
 
-            <label class="field">
-              <span>Értékelés (%)</span>
-              <input
-                v-model.number="languageExamForm.evaluation"
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                placeholder="0-100"
-                required
-              />
-            </label>
-
             <p v-if="formError" class="error">{{ formError }}</p>
+
+            <p v-if="!languageOptions.length" class="note">
+              Jelenleg nincs választható nyelv, mert a backend nem adott vissza listát.
+            </p>
+
+            <p v-if="!examTypeOptions.length" class="note">
+              Jelenleg nincs választható nyelvvizsga-szint, mert a backend nem adott vissza listát.
+            </p>
 
             <div class="modal-actions">
               <button class="button" type="submit">Hozzáadása</button>

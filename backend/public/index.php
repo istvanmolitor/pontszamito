@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Router;
 use App\ApiResource;
+use App\Controllers\ExamLevelController;
 use App\Controllers\SubjectController;
 use App\Controllers\LanguageExamController;
 use App\Controllers\ScoreCalculatorController;
@@ -17,6 +18,7 @@ if (ApiResource::handlePreflight()) {
 $router = new Router();
 
 $router->get('/api/subjects', [SubjectController::class, 'index']);
+$router->get('/api/exam-levels', [ExamLevelController::class, 'index']);
 $router->get('/api/language-exams', [LanguageExamController::class, 'index']);
 $router->post('/api/calculate', [ScoreCalculatorController::class, 'calculate']);
 
