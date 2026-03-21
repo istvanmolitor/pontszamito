@@ -6,23 +6,25 @@ namespace App;
 
 final class Router
 {
-    /** @var array<string, callable> */
+    /** @var array<string, array{0:class-string<Controller>,1:string}> */
     private array $getRoutes = [];
 
-    /** @var array<string, callable> */
+    /** @var array<string, array{0:class-string<Controller>,1:string}> */
     private array $postRoutes = [];
 
-    public function get(string $path, callable $handler): void
+    /** @param array{0:class-string<Controller>,1:string} $handler */
+    public function get(string $path, array $handler): void
     {
         $this->getRoutes[$this->normalizePath($path)] = $handler;
     }
 
-    public function post(string $path, callable $handler): void
+    /** @param array{0:class-string<Controller>,1:string} $handler */
+    public function post(string $path, array $handler): void
     {
         $this->postRoutes[$this->normalizePath($path)] = $handler;
     }
 
-    public function dispatch(string $method, string $path): bool
+    public function dispatch(string $method, string $path): ?ApiResource
     {
         $normalizedPath = $this->normalizePath($path);
 
@@ -33,12 +35,32 @@ final class Router
         };
 
         if ($routes === null || !isset($routes[$normalizedPath])) {
-            return false;
+            return null;
         }
 
-        $routes[$normalizedPath]();
+        [$controllerClass, $controllerMethod] = $routes[$normalizedPath];
 
-        return true;
+        if (!is_subclass_of($controllerClass, Controller::class)) {
+            throw new \RuntimeException(sprintf(
+                '%s must extend %s',
+                $controllerClass,
+                Controller::class
+            ));
+        }
+
+        $controller = new $controllerClass();
+        $response = $controller->{$controllerMethod}();
+
+        if (!$response instanceof ApiResource) {
+            throw new \RuntimeException(sprintf(
+                '%s::%s must return %s',
+                $controllerClass,
+                $controllerMethod,
+                ApiResource::class
+            ));
+        }
+
+        return $response;
     }
 
     private function normalizePath(string $path): string
