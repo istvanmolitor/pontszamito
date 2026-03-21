@@ -6,7 +6,7 @@ namespace App\Controllers;
 
 use App\ApiResource;
 use App\Controller;
-use App\SubjectRepository;
+use App\Repositories\SubjectRepository;
 
 final class SubjectController extends Controller
 {
