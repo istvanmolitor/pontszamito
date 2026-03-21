@@ -11,4 +11,13 @@ abstract class Controller
     {
         return new ApiResource($data);
     }
+
+    /** @return array<mixed> */
+    protected function getJsonBody(): array
+    {
+        $content = file_get_contents('php://input');
+        $data = json_decode($content, true);
+
+        return is_array($data) ? $data : [];
+    }
 }

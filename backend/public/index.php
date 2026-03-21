@@ -6,6 +6,7 @@ use App\Router;
 use App\ApiResource;
 use App\Controllers\SubjectController;
 use App\Controllers\LanguageExamController;
+use App\Controllers\ScoreCalculatorController;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -17,6 +18,7 @@ $router = new Router();
 
 $router->get('/api/subjects', [SubjectController::class, 'index']);
 $router->get('/api/language-exams', [LanguageExamController::class, 'index']);
+$router->post('/api/calculate', [ScoreCalculatorController::class, 'calculate']);
 
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
