@@ -11,6 +11,7 @@ const selectedSubjects = ref([])
 const selectedLanguageExams = ref([])
 const formError = ref('')
 const formSuccess = ref('')
+const totalScore = ref(null)
 const showSubjectModal = ref(false)
 const showLanguageExamModal = ref(false)
 const subjectForm = ref({
@@ -198,12 +199,14 @@ function addSubjectForCalculation() {
   }
   syncFormDefaults()
 
+  totalScore.value = null
   formSuccess.value = 'A tantárgy bekerült a pontszámításhoz.'
   showSubjectModal.value = false
 }
 
 function removeSubjectFromCalculation(index) {
   selectedSubjects.value.splice(index, 1)
+  totalScore.value = null
   formError.value = ''
   formSuccess.value = 'A tantárgy törölve lett.'
 }
@@ -234,12 +237,14 @@ function addLanguageExamForCalculation() {
   }
   syncFormDefaults()
 
+  totalScore.value = null
   formSuccess.value = 'A nyelvvizsga bekerült a pontszámításhoz.'
   showLanguageExamModal.value = false
 }
 
 function removeLanguageExamFromCalculation(index) {
   selectedLanguageExams.value.splice(index, 1)
+  totalScore.value = null
   formError.value = ''
   formSuccess.value = 'A nyelvvizsga törölve lett.'
 }
@@ -265,6 +270,7 @@ async function calculateScore() {
       }),
     })
 
+    totalScore.value = data.totalScore
     formSuccess.value = 'A pontszámítás sikeres volt!'
     console.log('Pontszámítás eredménye:', data)
   } catch (e) {
@@ -359,6 +365,17 @@ onMounted(loadOptions)
           Pontszámítás
         </button>
       </div>
+
+      <div v-if="totalScore !== null" class="section result-section">
+        <h2>Eredmény</h2>
+        <div class="result-card">
+          <div class="result-label">Összesített pontszám:</div>
+          <div class="result-value">{{ totalScore }} pont</div>
+        </div>
+      </div>
+
+      <p v-if="formSuccess" class="success">{{ formSuccess }}</p>
+      <p v-if="formError" class="error">{{ formError }}</p>
     </section>
 
     <!-- Subject Modal -->

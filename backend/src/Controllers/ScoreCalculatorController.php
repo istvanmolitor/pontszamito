@@ -45,6 +45,7 @@ final class ScoreCalculatorController extends Controller
         return $this->resource([
             'subjects' => $calculator->getExamSubjectResults(),
             'languageExams' => $calculator->getLanguageExams(),
+            'totalScore' => $calculator->calculateTotalScore(),
         ]);
     }
 }

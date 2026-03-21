@@ -54,4 +54,48 @@ final class ScoreCalculator
             $this->languageExams,
         );
     }
+
+    public function calculateTotalScore(): int
+    {
+        $subjectScore = $this->calculateSubjectScore();
+        $languageExamBonus = $this->calculateLanguageExamBonus();
+        
+        return $subjectScore + $languageExamBonus;
+    }
+
+    private function calculateSubjectScore(): int
+    {
+        $totalScore = 0;
+
+        foreach ($this->examSubjectResults as $result) {
+            // Base score from percentage (0-100)
+            $baseScore = $result->resultPercentage;
+            
+            // Multiply by 2 for advanced level, 1 for middle level
+            $multiplier = match ($result->level) {
+                ExamLevel::ADVANCED => 2,
+                ExamLevel::MIDDLE => 1,
+            };
+
+            $totalScore += $baseScore * $multiplier;
+        }
+
+        return $totalScore;
+    }
+
+    private function calculateLanguageExamBonus(): int
+    {
+        $bonus = 0;
+
+        foreach ($this->languageExams as $exam) {
+            // Language exam bonus based on type
+            // Typically: B2 = 28 points, C2 = 40 points
+            $bonus += match ($exam->type) {
+                LanguageExamType::B2 => 28,
+                LanguageExamType::C2 => 40,
+            };
+        }
+
+        return $bonus;
+    }
 }
