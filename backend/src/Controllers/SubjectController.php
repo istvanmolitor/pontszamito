@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Controllers;
+
+use App\ApiResource;
+use App\Controller;
+use App\SubjectRepository;
 
 final class SubjectController extends Controller
 {
