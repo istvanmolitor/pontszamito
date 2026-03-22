@@ -4,6 +4,9 @@
 # Composer dependencies
 backend/vendor/
 
+# PHPUnit
+backend/.phpunit.cache
+
 # Test files
 backend/test_duplicates.php
 

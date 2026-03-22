@@ -22,6 +22,22 @@ Elérhető endpoint:
 - `GET http://127.0.0.1:8000/api/language-exams`
 - `POST http://127.0.0.1:8000/api/calculate`
 
+#### Tesztek futtatása
+
+```bash
+cd backend
+composer test
+```
+
+Vagy részletesebb kimenettel:
+
+```bash
+cd backend
+./vendor/bin/phpunit --testdox
+```
+
+A tesztek a `homework_input.php` példák alapján készültek. További információ: [TESZTEK.md](TESZTEK.md)
+
 ### 2) Frontend
 
 ```bash

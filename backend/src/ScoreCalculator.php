@@ -52,11 +52,10 @@ final class ScoreCalculator
         );
     }
 
-    public function addLanguageExam(string $language, string $level, string $type = 'B2'): void
+    public function addLanguageExam(string $language, string $type = 'B2'): void
     {
         $this->languageExams[] = new LanguageExam(
             language: Language::fromInput($language),
-            level: strtoupper(trim($level)),
             type: LanguageExamType::fromInput($type),
         );
     }
@@ -70,7 +69,7 @@ final class ScoreCalculator
         );
     }
 
-    /** @return list<array{language:string, level:string, type:string}> */
+    /** @return list<array{language:string, type:string}> */
     public function getLanguageExams(): array
     {
         return array_map(

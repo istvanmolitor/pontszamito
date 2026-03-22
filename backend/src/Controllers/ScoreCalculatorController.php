@@ -49,7 +49,6 @@ final class ScoreCalculatorController extends Controller
                     if (isset($exam['language'], $exam['examType'])) {
                         $calculator->addLanguageExam(
                             (string)$exam['language'],
-                            (string)$exam['examType'],
                             (string)$exam['examType']
                         );
                     }
