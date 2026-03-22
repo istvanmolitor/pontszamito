@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Enums;
+
+enum UniversityProgram: string
+{
+    case ELTE_IK_PROGRAMMING = 'elte_ik_programming';
+    case PPKE_BTK_ANGLISTICS = 'ppke_btk_anglistics';
+
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::ELTE_IK_PROGRAMMING => 'ELTE IK – Programtervező informatikus',
+            self::PPKE_BTK_ANGLISTICS => 'PPKE BTK – Anglisztika',
+        };
+    }
+}
+

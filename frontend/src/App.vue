@@ -5,6 +5,8 @@ const subjects = ref([])
 const subjectLevelOptions = ref([])
 const languageOptions = ref([])
 const examTypeOptions = ref([])
+const universityPrograms = ref([])
+const selectedUniversityProgram = ref('')
 const loading = ref(true)
 const error = ref('')
 const selectedSubjects = ref([])
@@ -31,6 +33,16 @@ const subjectOptions = computed(() => {
 
   return subjects.value
     .filter((subject) => subject && typeof subject === 'object' && subject.value && subject.label)
+    .sort((first, second) => first.label.localeCompare(second.label, 'hu'))
+})
+
+const universityProgramOptions = computed(() => {
+  if (!Array.isArray(universityPrograms.value)) {
+    return []
+  }
+
+  return universityPrograms.value
+    .filter((program) => program && typeof program === 'object' && program.value && program.label)
     .sort((first, second) => first.label.localeCompare(second.label, 'hu'))
 })
 
@@ -112,10 +124,11 @@ async function loadOptions() {
   error.value = ''
 
   try {
-    const [subjectData, examLevelData, languageExamData] = await Promise.all([
+    const [subjectData, examLevelData, languageExamData, universityProgramData] = await Promise.all([
       fetchApiJson('/api/subjects'),
       fetchApiJson('/api/exam-levels'),
       fetchApiJson('/api/language-exams'),
+      fetchApiJson('/api/university-programs'),
     ])
 
     subjects.value = Array.isArray(subjectData.subjects) ? subjectData.subjects : []
@@ -125,6 +138,9 @@ async function loadOptions() {
       : []
     examTypeOptions.value = Array.isArray(languageExamData.examTypes)
       ? languageExamData.examTypes
+      : []
+    universityPrograms.value = Array.isArray(universityProgramData.programs)
+      ? universityProgramData.programs
       : []
 
     syncFormDefaults()
@@ -155,6 +171,10 @@ function getLanguageLabel(languageValue) {
 
 function getExamTypeLabel(examTypeValue) {
   return getOptionLabel(examTypeOptions.value, examTypeValue, examTypeValue)
+}
+
+function getUniversityProgramLabel(programValue) {
+  return getOptionLabel(universityPrograms.value, programValue, programValue)
 }
 
 function closeSubjectModal() {
@@ -296,6 +316,18 @@ onMounted(loadOptions)
 
       <p v-if="loading">Betöltés...</p>
       <p v-else-if="error" class="error">{{ error }}</p>
+
+      <div v-if="!loading && !error" class="section">
+        <label class="field">
+          <span>Egyetemi szak</span>
+          <select v-model="selectedUniversityProgram">
+            <option value="" disabled>Válassz egy szakot</option>
+            <option v-for="program in universityProgramOptions" :key="program.value" :value="program.value">
+              {{ program.label }}
+            </option>
+          </select>
+        </label>
+      </div>
 
       <div v-if="!loading && !error" class="section">
         <h2>Tantárgy hozzáadása</h2>
