@@ -13,6 +13,7 @@ use App\Enums\LanguageExamType;
 use App\Enums\Subject;
 use App\Exceptions\FailedExamException;
 use App\Exceptions\MandatorySubjectsMissingException;
+use App\Exceptions\MandatorySelectableSubjectsMissingException;
 
 final class ScoreCalculator
 {
@@ -71,9 +72,16 @@ final class ScoreCalculator
         return $this->universityProgram->getMandatorySubjects();
     }
 
+    /** @return list<list<Subject>> */
+    public function getMandatorySelectableSubjects(): array
+    {
+        return $this->universityProgram->getMandatorySelectableSubjects();
+    }
+
     public function validate(): void
     {
         $this->validateMandatorySubjects();
+        $this->validateMandatorySelectableSubjects();
         $this->validateMinimumPercentage();
     }
 
@@ -105,6 +113,42 @@ final class ScoreCalculator
             throw new MandatorySubjectsMissingException(
                 "A következő kötelező tantárgyak hiányoznak: {$missingList}"
             );
+        }
+    }
+
+    private function validateMandatorySelectableSubjects(): void
+    {
+        $selectableGroups = $this->getMandatorySelectableSubjects();
+        
+        if (empty($selectableGroups)) {
+            return;
+        }
+
+        $providedSubjects = array_map(
+            static fn(ExamSubjectResult $result): Subject => $result->subject,
+            $this->examSubjectResults
+        );
+
+        foreach ($selectableGroups as $group) {
+            $hasAtLeastOne = false;
+            
+            foreach ($group as $selectableSubject) {
+                if (in_array($selectableSubject, $providedSubjects, true)) {
+                    $hasAtLeastOne = true;
+                    break;
+                }
+            }
+
+            if (!$hasAtLeastOne) {
+                $subjectLabels = array_map(
+                    static fn(Subject $subject): string => $subject->getLabel(),
+                    $group
+                );
+                $subjectList = implode(', ', $subjectLabels);
+                throw new MandatorySelectableSubjectsMissingException(
+                    "Legalább egy kötelezően választható tantárgyból érettségit kell tenni. Válasszon egyet a következők közül: {$subjectList}"
+                );
+            }
         }
     }
 

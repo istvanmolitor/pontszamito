@@ -14,9 +14,9 @@ abstract class AbstractUniversityProgram
     abstract public function getMandatorySubjects(): array;
 
     /**
-     * @return list<array{subject: Subject, weight: int}>
+     * @return list<list<Subject>>
      */
-    abstract public function getSubjectWeights(): array;
+    abstract public function getMandatorySelectableSubjects(): array;
 
     abstract public function getName(): string;
 }

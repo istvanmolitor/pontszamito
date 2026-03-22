@@ -22,10 +22,10 @@ enum ExamLevel: string
     public static function fromInput(string $input): self
     {
         $normalized = mb_strtolower(trim($input), 'UTF-8');
-        
+
         return match ($normalized) {
-            'middle' => self::MIDDLE,
-            'advanced' => self::ADVANCED,
+            'middle', 'kozep', 'középszint', 'közép' => self::MIDDLE,
+            'advanced', 'emelt', 'emelt szint' => self::ADVANCED,
             default => throw new InvalidArgumentException(
                 'Exam level must be one of: middle, advanced, kozep, emelt.'
             ),

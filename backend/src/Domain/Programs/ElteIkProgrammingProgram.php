@@ -27,12 +27,17 @@ final class ElteIkProgrammingProgram extends AbstractUniversityProgram
     }
 
     /**
-     * @return list<array{subject: Subject, weight: int}>
+     * @return list<list<Subject>>
      */
-    public function getSubjectWeights(): array
+    public function getMandatorySelectableSubjects(): array
     {
         return [
-            ['subject' => Subject::MATHEMATICS, 'weight' => 100],
+            [
+                Subject::PHYSICS,
+                Subject::BIOLOGY,
+                Subject::INFORMATICS,
+                Subject::CHEMISTRY,
+            ],
         ];
     }
 }
