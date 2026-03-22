@@ -25,21 +25,13 @@ const languageExamForm = ref({
 })
 
 const subjectOptions = computed(() => {
-  const names = subjects.value
-    .map((subject) => {
-      if (typeof subject === 'string') {
-        return subject.trim()
-      }
+  if (!Array.isArray(subjects.value)) {
+    return []
+  }
 
-      if (subject && typeof subject === 'object' && typeof subject.name === 'string') {
-        return subject.name.trim()
-      }
-
-      return ''
-    })
-    .filter(Boolean)
-
-  return [...new Set(names)].sort((first, second) => first.localeCompare(second, 'hu'))
+  return subjects.value
+    .filter((subject) => subject && typeof subject === 'object' && subject.value && subject.label)
+    .sort((first, second) => first.label.localeCompare(second.label, 'hu'))
 })
 
 function normalizeBaseUrl(value) {
@@ -151,6 +143,10 @@ async function loadOptions() {
 
 function formatLevel(level) {
   return getOptionLabel(subjectLevelOptions.value, level, level)
+}
+
+function getSubjectLabel(subjectValue) {
+  return getOptionLabel(subjects.value, subjectValue, subjectValue)
 }
 
 function getLanguageLabel(languageValue) {
@@ -318,7 +314,7 @@ onMounted(loadOptions)
             class="subject-item"
           >
             <div>
-              <strong>{{ selectedSubject.name }}</strong>
+              <strong>{{ getSubjectLabel(selectedSubject.name) }}</strong>
               <small>{{ formatLevel(selectedSubject.level) }}</small>
             </div>
             <div class="subject-actions">
@@ -399,8 +395,8 @@ onMounted(loadOptions)
               <span>Tantárgy</span>
               <select v-model="subjectForm.name" required>
                 <option value="" disabled>Válassz tantárgyat</option>
-                <option v-for="name in subjectOptions" :key="name" :value="name">
-                  {{ name }}
+                <option v-for="subject in subjectOptions" :key="subject.value" :value="subject.value">
+                  {{ subject.label }}
                 </option>
               </select>
             </label>

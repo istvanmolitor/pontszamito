@@ -9,12 +9,15 @@ use App\Enums\Subject;
 final class SubjectRepository
 {
     /**
-     * @return list<string>
+     * @return list<array{value: string, label: string}>
      */
     public function all(): array
     {
         return array_map(
-            static fn (Subject $subject): string => $subject->value,
+            static fn (Subject $subject): array => [
+                'value' => $subject->value,
+                'label' => $subject->getLabel(),
+            ],
             Subject::cases()
         );
     }
