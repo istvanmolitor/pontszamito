@@ -29,7 +29,9 @@ enum Language: string
 
     public static function fromInput(string $input): self
     {
-        return match (strtolower(trim($input))) {
+        $normalized = mb_strtolower(trim($input), 'UTF-8');
+        
+        return match ($normalized) {
             'english', 'angol' => self::ENGLISH,
             'german', 'német', 'nemet' => self::GERMAN,
             'french', 'francia' => self::FRENCH,

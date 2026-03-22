@@ -21,7 +21,9 @@ enum ExamLevel: string
 
     public static function fromInput(string $input): self
     {
-        return match (strtolower(trim($input))) {
+        $normalized = mb_strtolower(trim($input), 'UTF-8');
+        
+        return match ($normalized) {
             'middle' => self::MIDDLE,
             'advanced' => self::ADVANCED,
             default => throw new InvalidArgumentException(

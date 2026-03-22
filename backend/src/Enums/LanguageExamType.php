@@ -21,7 +21,9 @@ enum LanguageExamType: string
 
     public static function fromInput(string $input): self
     {
-        return match (strtolower(trim($input))) {
+        $normalized = mb_strtolower(trim($input), 'UTF-8');
+        
+        return match ($normalized) {
             'b2', 'középfok', 'kozepfok' => self::B2,
             'c2', 'felsőfok', 'felsofok' => self::C2,
             default => throw new InvalidArgumentException(
