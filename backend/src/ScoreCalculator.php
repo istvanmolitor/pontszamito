@@ -119,7 +119,7 @@ final class ScoreCalculator
     private function validateMandatorySelectableSubjects(): void
     {
         $selectableGroups = $this->getMandatorySelectableSubjects();
-        
+
         if (empty($selectableGroups)) {
             return;
         }
@@ -131,7 +131,7 @@ final class ScoreCalculator
 
         foreach ($selectableGroups as $group) {
             $hasAtLeastOne = false;
-            
+
             foreach ($group as $selectableSubject) {
                 if (in_array($selectableSubject, $providedSubjects, true)) {
                     $hasAtLeastOne = true;
@@ -165,36 +165,72 @@ final class ScoreCalculator
 
     private function calculateSubjectScore(): int
     {
-        $totalScore = 0;
+        $mandatorySubjects = $this->getMandatorySubjects();
+        $mandatorySelectableGroups = $this->getMandatorySelectableSubjects();
 
+        // Kötelező tantárgyak pontértékeinek összege
+        $mandatoryScore = 0;
         foreach ($this->examSubjectResults as $result) {
-            // Base score from percentage (0-100)
-            $baseScore = $result->resultPercentage;
+            if (in_array($result->subject, $mandatorySubjects, true)) {
+                // Base score from percentage (0-100)
+                $baseScore = $result->resultPercentage;
 
-            // Multiply by 2 for advanced level, 1 for middle level
-            $multiplier = match ($result->level) {
-                ExamLevel::ADVANCED => 2,
-                ExamLevel::MIDDLE => 1,
-            };
+                // Multiply by 2 for advanced level, 1 for middle level
+                $multiplier = match ($result->level) {
+                    ExamLevel::ADVANCED => 2,
+                    ExamLevel::MIDDLE => 1,
+                };
 
-            $totalScore += $baseScore * $multiplier;
+                $mandatoryScore += $baseScore * $multiplier;
+            }
         }
 
-        return $totalScore;
+        // Legjobb kötelezően választható tárgy pontértéke
+        $bestSelectableScore = 0;
+
+        // Minden kötelezően választható tárgy csoportot végigjárunk
+        foreach ($mandatorySelectableGroups as $group) {
+            foreach ($this->examSubjectResults as $result) {
+                if (in_array($result->subject, $group, true)) {
+                    // Base score from percentage (0-100)
+                    $baseScore = $result->resultPercentage;
+
+                    // Multiply by 2 for advanced level, 1 for middle level
+                    $multiplier = match ($result->level) {
+                        ExamLevel::ADVANCED => 2,
+                        ExamLevel::MIDDLE => 1,
+                    };
+
+                    $score = $baseScore * $multiplier;
+
+                    if ($score > $bestSelectableScore) {
+                        $bestSelectableScore = $score;
+                    }
+                }
+            }
+        }
+
+        // Az alappontszám = (kötelező pontok + legjobb választható pontok) * 2
+        return ($mandatoryScore + $bestSelectableScore) * 2;
     }
 
     private function calculateLanguageExamBonus(): int
     {
-        $bonus = 0;
+        $languageBonuses = [];
 
         foreach ($this->languageExams as $exam) {
-            $bonus += match ($exam->type) {
+            $points = match ($exam->type) {
                 LanguageExamType::B2 => 28,
                 LanguageExamType::C2 => 40,
             };
+
+            $languageKey = $exam->language->value;
+            if (!isset($languageBonuses[$languageKey]) || $points > $languageBonuses[$languageKey]) {
+                $languageBonuses[$languageKey] = $points;
+            }
         }
 
-        return $bonus;
+        return array_sum($languageBonuses);
     }
 
     public function calculateAdvancedSubjectBonus(): int
