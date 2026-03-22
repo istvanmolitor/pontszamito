@@ -3,3 +3,7 @@
 
 # Composer dependencies
 backend/vendor/
+
+# Test files
+backend/test_duplicates.php
+

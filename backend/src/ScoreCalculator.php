@@ -11,6 +11,7 @@ use App\Enums\ExamLevel;
 use App\Enums\Language;
 use App\Enums\LanguageExamType;
 use App\Enums\Subject;
+use App\Exceptions\DuplicateSubjectException;
 use App\Exceptions\FailedExamException;
 use App\Exceptions\MandatorySubjectsMissingException;
 use App\Exceptions\MandatorySelectableSubjectsMissingException;
@@ -32,9 +33,21 @@ final class ScoreCalculator
 
     public function addExamSubjectResult(string $subject, string $level, int $resultPercentage): void
     {
+        $subjectEnum = Subject::fromInput($subject);
+        $levelEnum = ExamLevel::fromInput($level);
+
+        // Check if this subject with the same level already exists
+        foreach ($this->examSubjectResults as $existingResult) {
+            if ($existingResult->subject === $subjectEnum && $existingResult->level === $levelEnum) {
+                throw new DuplicateSubjectException(
+                    "A(z) {$subjectEnum->getLabel()} tantárgy ({$levelEnum->getLabel()} szint) már hozzá van adva."
+                );
+            }
+        }
+
         $this->examSubjectResults[] = new ExamSubjectResult(
-            subject: Subject::fromInput($subject),
-            level: ExamLevel::fromInput($level),
+            subject: $subjectEnum,
+            level: $levelEnum,
             resultPercentage: $resultPercentage,
         );
     }

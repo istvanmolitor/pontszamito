@@ -163,6 +163,17 @@ function addSubjectForCalculation(subjectData) {
   formError.value = ''
   formSuccess.value = ''
 
+  // Check if the same subject with the same level already exists
+  const isDuplicate = selectedSubjects.value.some(
+    (subject) => subject.name === subjectData.name && subject.level === subjectData.level
+  )
+
+  if (isDuplicate) {
+    formError.value = 'Ez a tantárgy ugyanezen a szinten már hozzá van adva.'
+    showSubjectModal.value = false
+    return
+  }
+
   selectedSubjects.value.push(subjectData)
 
   totalScore.value = null
