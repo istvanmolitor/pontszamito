@@ -10,6 +10,7 @@ use App\Enums\ExamLevel;
 use App\Enums\Language;
 use App\Enums\LanguageExamType;
 use App\Enums\Subject;
+use App\Exceptions\FailedExamException;
 use App\Exceptions\MandatorySubjectsMissingException;
 
 final class ScoreCalculator
@@ -69,6 +70,7 @@ final class ScoreCalculator
     public function validate(): void
     {
         $this->validateMandatorySubjects();
+        $this->validateMinimumPercentage();
     }
 
     public function calculateTotalScore(): int
@@ -99,6 +101,17 @@ final class ScoreCalculator
             throw new MandatorySubjectsMissingException(
                 "A következő kötelező tantárgyak hiányoznak: {$missingList}"
             );
+        }
+    }
+
+    private function validateMinimumPercentage(): void
+    {
+        foreach ($this->examSubjectResults as $result) {
+            if ($result->resultPercentage < 20) {
+                throw new FailedExamException(
+                    "A vizsga sikertelen: {$result->subject->getLabel()} tantárgy eredménye ({$result->resultPercentage}%) 20% alatt van."
+                );
+            }
         }
     }
 

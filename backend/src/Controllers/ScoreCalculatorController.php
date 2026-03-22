@@ -7,7 +7,6 @@ namespace App\Controllers;
 use App\ApiResource;
 use App\Controller;
 use App\ScoreCalculator;
-use App\Exceptions\MandatorySubjectsMissingException;
 use Exception;
 
 final class ScoreCalculatorController extends Controller
@@ -52,8 +51,6 @@ final class ScoreCalculatorController extends Controller
                 'totalScore' => $calculator->calculateTotalScore(),
             ]);
 
-        } catch (MandatorySubjectsMissingException $e) {
-            return $this->errorResponse($e->getMessage(), 400);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }

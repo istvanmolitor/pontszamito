@@ -258,6 +258,7 @@ function removeLanguageExamFromCalculation(index) {
 async function calculateScore() {
   formError.value = ''
   formSuccess.value = ''
+  totalScore.value = null
 
   if (selectedSubjects.value.length === 0 && selectedLanguageExams.value.length === 0) {
     formError.value = 'Legalább egy tantárgyat vagy nyelvvizsgát hozzá kell adni a pontszámítás előtt.'
@@ -280,6 +281,7 @@ async function calculateScore() {
     formSuccess.value = 'A pontszámítás sikeres volt!'
     console.log('Pontszámítás eredménye:', data)
   } catch (e) {
+    totalScore.value = null
     if (e instanceof TypeError) {
       formError.value = 'Nem érhető el a backend API.'
     } else {
