@@ -1,5 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import SubjectModal from './components/SubjectModal.vue'
+import LanguageExamModal from './components/LanguageExamModal.vue'
 
 const subjects = ref([])
 const subjectLevelOptions = ref([])
@@ -16,15 +18,6 @@ const formSuccess = ref('')
 const totalScore = ref(null)
 const showSubjectModal = ref(false)
 const showLanguageExamModal = ref(false)
-const subjectForm = ref({
-  name: '',
-  level: 'middle',
-  evaluation: '',
-})
-const languageExamForm = ref({
-  language: '',
-  examType: 'B2',
-})
 
 const subjectOptions = computed(() => {
   if (!Array.isArray(subjects.value)) {
@@ -105,19 +98,6 @@ function getOptionLabel(options, value, fallback = value) {
   return option ? option.label : fallback
 }
 
-function syncFormDefaults() {
-  if (!subjectLevelOptions.value.some((option) => option.value === subjectForm.value.level)) {
-    subjectForm.value.level = subjectLevelOptions.value[0]?.value ?? ''
-  }
-
-  if (!languageOptions.value.some((option) => option.value === languageExamForm.value.language)) {
-    languageExamForm.value.language = ''
-  }
-
-  if (!examTypeOptions.value.some((option) => option.value === languageExamForm.value.examType)) {
-    languageExamForm.value.examType = examTypeOptions.value[0]?.value ?? ''
-  }
-}
 
 async function loadOptions() {
   loading.value = true
@@ -142,8 +122,6 @@ async function loadOptions() {
     universityPrograms.value = Array.isArray(universityProgramData.programs)
       ? universityProgramData.programs
       : []
-
-    syncFormDefaults()
   } catch (lastError) {
     if (lastError instanceof TypeError) {
       error.value =
@@ -173,53 +151,19 @@ function getExamTypeLabel(examTypeValue) {
   return getOptionLabel(examTypeOptions.value, examTypeValue, examTypeValue)
 }
 
-function getUniversityProgramLabel(programValue) {
-  return getOptionLabel(universityPrograms.value, programValue, programValue)
-}
-
 function closeSubjectModal() {
   showSubjectModal.value = false
-  formError.value = ''
 }
 
 function closeLanguageExamModal() {
   showLanguageExamModal.value = false
-  formError.value = ''
 }
 
-function addSubjectForCalculation() {
+function addSubjectForCalculation(subjectData) {
   formError.value = ''
   formSuccess.value = ''
 
-  const name = subjectForm.value.name.trim()
-  if (!name) {
-    formError.value = 'Válassz tantárgyat a legördülőből.'
-    return
-  }
-
-  const evaluation = Number(subjectForm.value.evaluation)
-  if (!Number.isInteger(evaluation) || evaluation < 0 || evaluation > 100) {
-    formError.value = 'Az értékelés csak 0 és 100 közötti egész szám lehet.'
-    return
-  }
-
-  if (!subjectForm.value.level) {
-    formError.value = 'Válassz szintet a legördülőből.'
-    return
-  }
-
-  selectedSubjects.value.push({
-    name,
-    level: subjectForm.value.level,
-    evaluation,
-  })
-
-  subjectForm.value = {
-    name: '',
-    level: 'middle',
-    evaluation: '',
-  }
-  syncFormDefaults()
+  selectedSubjects.value.push(subjectData)
 
   totalScore.value = null
   formSuccess.value = 'A tantárgy bekerült a pontszámításhoz.'
@@ -233,31 +177,11 @@ function removeSubjectFromCalculation(index) {
   formSuccess.value = 'A tantárgy törölve lett.'
 }
 
-function addLanguageExamForCalculation() {
+function addLanguageExamForCalculation(languageExamData) {
   formError.value = ''
   formSuccess.value = ''
 
-  const language = languageExamForm.value.language.trim()
-  if (!language) {
-    formError.value = 'Válassz egy nyelvet a legördülőből.'
-    return
-  }
-
-  if (!languageExamForm.value.examType) {
-    formError.value = 'Válassz nyelvvizsga-szintet a legördülőből.'
-    return
-  }
-
-  selectedLanguageExams.value.push({
-    language,
-    examType: languageExamForm.value.examType,
-  })
-
-  languageExamForm.value = {
-    language: '',
-    examType: 'B2',
-  }
-  syncFormDefaults()
+  selectedLanguageExams.value.push(languageExamData)
 
   totalScore.value = null
   formSuccess.value = 'A nyelvvizsga bekerült a pontszámításhoz.'
@@ -421,114 +345,21 @@ onMounted(loadOptions)
     </section>
 
     <!-- Subject Modal -->
-    <div v-if="showSubjectModal" class="modal-overlay" @click="closeSubjectModal">
-      <div class="modal" @click.stop>
-        <div class="modal-header">
-          <h2>Új tantárgy hozzáadása</h2>
-          <button class="modal-close" @click="closeSubjectModal">✕</button>
-        </div>
-        <div class="modal-body">
-          <form class="calc-form" @submit.prevent="addSubjectForCalculation">
-            <label class="field">
-              <span>Tantárgy</span>
-              <select v-model="subjectForm.name" required>
-                <option value="" disabled>Válassz tantárgyat</option>
-                <option v-for="subject in subjectOptions" :key="subject.value" :value="subject.value">
-                  {{ subject.label }}
-                </option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Szint</span>
-              <select v-model="subjectForm.level">
-                <option v-for="level in subjectLevelOptions" :key="level.value" :value="level.value">
-                  {{ level.label }}
-                </option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Értékelés (%)</span>
-              <input
-                v-model.number="subjectForm.evaluation"
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                placeholder="0-100"
-                required
-              />
-            </label>
-
-            <p v-if="!subjectOptions.length" class="note">
-              Jelenleg nincs választható tantárgy, mert a backend nem adott vissza listát.
-            </p>
-
-            <p v-if="!subjectLevelOptions.length" class="note">
-              Jelenleg nincs választható szint, mert a backend nem adott vissza listát.
-            </p>
-
-            <p v-if="formError" class="error">{{ formError }}</p>
-
-            <div class="modal-actions">
-              <button class="button" type="submit">Hozzáadása</button>
-              <button class="button button-secondary" type="button" @click="closeSubjectModal">
-                Mégsem
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <SubjectModal
+      :show="showSubjectModal"
+      :subject-options="subjectOptions"
+      :subject-level-options="subjectLevelOptions"
+      @close="closeSubjectModal"
+      @add="addSubjectForCalculation"
+    />
 
     <!-- Language Exam Modal -->
-    <div v-if="showLanguageExamModal" class="modal-overlay" @click="closeLanguageExamModal">
-      <div class="modal" @click.stop>
-        <div class="modal-header">
-          <h2>Új nyelvvizsga hozzáadása</h2>
-          <button class="modal-close" @click="closeLanguageExamModal">✕</button>
-        </div>
-        <div class="modal-body">
-          <form class="calc-form" @submit.prevent="addLanguageExamForCalculation">
-            <label class="field">
-              <span>Nyelv</span>
-              <select v-model="languageExamForm.language" required>
-                <option value="" disabled>Válassz egy nyelvet</option>
-                <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
-                  {{ lang.label }}
-                </option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Szint</span>
-              <select v-model="languageExamForm.examType">
-                <option v-for="examType in examTypeOptions" :key="examType.value" :value="examType.value">
-                  {{ examType.label }}
-                </option>
-              </select>
-            </label>
-
-            <p v-if="formError" class="error">{{ formError }}</p>
-
-            <p v-if="!languageOptions.length" class="note">
-              Jelenleg nincs választható nyelv, mert a backend nem adott vissza listát.
-            </p>
-
-            <p v-if="!examTypeOptions.length" class="note">
-              Jelenleg nincs választható nyelvvizsga-szint, mert a backend nem adott vissza listát.
-            </p>
-
-            <div class="modal-actions">
-              <button class="button" type="submit">Hozzáadása</button>
-              <button class="button button-secondary" type="button" @click="closeLanguageExamModal">
-                Mégsem
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <LanguageExamModal
+      :show="showLanguageExamModal"
+      :language-options="languageOptions"
+      :exam-type-options="examTypeOptions"
+      @close="closeLanguageExamModal"
+      @add="addLanguageExamForCalculation"
+    />
   </main>
 </template>
