@@ -95,6 +95,7 @@ final class ScoreCalculator
     {
         $this->validateMandatorySubjects();
         $this->validateMandatorySelectableSubjects();
+        $this->validateAdvancedLevelRequiredSubjects();
         $this->validateMinimumPercentage();
     }
 
@@ -160,6 +161,42 @@ final class ScoreCalculator
                 $subjectList = implode(', ', $subjectLabels);
                 throw new MandatorySelectableSubjectsMissingException(
                     "Legalább egy kötelezően választható tantárgyból érettségit kell tenni. Válasszon egyet a következők közül: {$subjectList}"
+                );
+            }
+        }
+    }
+
+    private function validateAdvancedLevelRequiredSubjects(): void
+    {
+        $advancedLevelRequired = $this->universityProgram->getAdvancedLevelRequiredSubjects();
+
+        if (empty($advancedLevelRequired)) {
+            return;
+        }
+
+        foreach ($advancedLevelRequired as $requiredSubject) {
+            $found = false;
+            $foundAtAdvancedLevel = false;
+
+            foreach ($this->examSubjectResults as $result) {
+                if ($result->subject === $requiredSubject) {
+                    $found = true;
+                    if ($result->level === ExamLevel::ADVANCED) {
+                        $foundAtAdvancedLevel = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!$found) {
+                throw new MandatorySubjectsMissingException(
+                    "A következő kötelező tantárgy hiányzik: {$requiredSubject->getLabel()}"
+                );
+            }
+
+            if (!$foundAtAdvancedLevel) {
+                throw new MandatorySubjectsMissingException(
+                    "A(z) {$requiredSubject->getLabel()} tantárgyból emelt szintű érettségi szükséges."
                 );
             }
         }

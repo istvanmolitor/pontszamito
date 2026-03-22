@@ -20,9 +20,7 @@ final class PpkeBtkAnglisticsProgram extends AbstractUniversityProgram
     public function getMandatorySubjects(): array
     {
         return [
-            Subject::HUNGARIAN_LANGUAGE_AND_LITERATURE,
-            Subject::HISTORY,
-            Subject::MATHEMATICS,
+            Subject::ENGLISH,
         ];
     }
 
@@ -33,11 +31,23 @@ final class PpkeBtkAnglisticsProgram extends AbstractUniversityProgram
     {
         return [
             [
-                Subject::PHYSICS,
-                Subject::BIOLOGY,
-                Subject::INFORMATICS,
-                Subject::CHEMISTRY,
+                Subject::FRENCH,
+                Subject::GERMAN,
+                Subject::ITALIAN,
+                Subject::RUSSIAN,
+                Subject::SPANISH,
+                Subject::HISTORY,
             ],
+        ];
+    }
+
+    /**
+     * @return list<Subject>
+     */
+    public function getAdvancedLevelRequiredSubjects(): array
+    {
+        return [
+            Subject::ENGLISH,
         ];
     }
 }

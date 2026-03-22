@@ -15,6 +15,12 @@ enum Subject: string
     case BIOLOGY = 'biology';
     case INFORMATICS = 'informatics';
     case CHEMISTRY = 'chemistry';
+    case ENGLISH = 'english';
+    case FRENCH = 'french';
+    case GERMAN = 'german';
+    case ITALIAN = 'italian';
+    case RUSSIAN = 'russian';
+    case SPANISH = 'spanish';
 
     public function getLabel(): string
     {
@@ -26,6 +32,12 @@ enum Subject: string
             self::BIOLOGY => 'Biológia',
             self::INFORMATICS => 'Informatika',
             self::CHEMISTRY => 'Kémia',
+            self::ENGLISH => 'Angol',
+            self::FRENCH => 'Francia',
+            self::GERMAN => 'Német',
+            self::ITALIAN => 'Olasz',
+            self::RUSSIAN => 'Orosz',
+            self::SPANISH => 'Spanyol',
         };
     }
 
@@ -41,8 +53,14 @@ enum Subject: string
             'biology', 'biológia', 'biologia', 'bio101' => self::BIOLOGY,
             'informatics', 'informatika', 'inf101', 'inf201' => self::INFORMATICS,
             'chemistry', 'kémia', 'kemia', 'che101' => self::CHEMISTRY,
+            'english', 'angol' => self::ENGLISH,
+            'french', 'francia' => self::FRENCH,
+            'german', 'német', 'nemet' => self::GERMAN,
+            'italian', 'olasz' => self::ITALIAN,
+            'russian', 'orosz' => self::RUSSIAN,
+            'spanish', 'spanyol' => self::SPANISH,
             default => throw new InvalidArgumentException(
-                'Subject must be one of: hungarian language and literature, history, mathematics, physics, biology, informatics, chemistry.'
+                'Subject must be one of: hungarian language and literature, history, mathematics, physics, biology, informatics, chemistry, english, french, german, italian, russian, spanish.'
             ),
         };
     }
