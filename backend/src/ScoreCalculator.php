@@ -56,23 +56,31 @@ final class ScoreCalculator
         );
     }
 
-    public function calculateTotalScore(): int
+    /** @return list<Subject> */
+    public function getMandatorySubjects(): array
+    {
+        return [
+            Subject::HUNGARIAN_LANGUAGE_AND_LITERATURE,
+            Subject::HISTORY,
+            Subject::MATHEMATICS,
+        ];
+    }
+
+    public function validate(): void
     {
         $this->validateMandatorySubjects();
-        
-        $subjectScore = $this->calculateSubjectScore();
-        $languageExamBonus = $this->calculateLanguageExamBonus();
+    }
+
+    public function calculateTotalScore(): int
+    {
+        $this->validate();
 
         return $this->calculateSubjectScore() + $this->calculateExtraScore();
     }
 
     private function validateMandatorySubjects(): void
     {
-        $requiredSubjects = [
-            Subject::HUNGARIAN_LANGUAGE_AND_LITERATURE,
-            Subject::HISTORY,
-            Subject::MATHEMATICS,
-        ];
+        $requiredSubjects = $this->getMandatorySubjects();
 
         $providedSubjects = array_map(
             static fn(ExamSubjectResult $result): Subject => $result->subject,

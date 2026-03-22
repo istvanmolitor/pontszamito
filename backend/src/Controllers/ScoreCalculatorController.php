@@ -9,7 +9,6 @@ use App\Controller;
 use App\ScoreCalculator;
 use App\Exceptions\MandatorySubjectsMissingException;
 use Exception;
-use http\Exception\InvalidArgumentException;
 
 final class ScoreCalculatorController extends Controller
 {
