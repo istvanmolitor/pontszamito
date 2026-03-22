@@ -1,4 +1,4 @@
-# Pontszámító - első kör
+# Pontszámító
 
 Ebben a körben a projekt két részből áll:
 
