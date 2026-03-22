@@ -10,11 +10,13 @@ final class ApiResource implements JsonSerializable
 {
     /** @var array<mixed> */
     private array $data;
+    private int $statusCode;
 
     /** @param array<mixed> $data */
-    public function __construct(array $data)
+    public function __construct(array $data, int $statusCode = 200)
     {
         $this->data = $data;
+        $this->statusCode = $statusCode;
     }
 
     /** @return array<mixed> */
@@ -29,10 +31,10 @@ final class ApiResource implements JsonSerializable
         return $this->toArray();
     }
 
-    public function send(int $statusCode = 200): void
+    public function send(): void
     {
         self::sendDefaultHeaders();
-        http_response_code($statusCode);
+        http_response_code($this->statusCode);
 
         echo json_encode(
             $this,

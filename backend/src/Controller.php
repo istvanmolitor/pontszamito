@@ -12,6 +12,13 @@ abstract class Controller
         return new ApiResource($data);
     }
 
+    public function errorResponse(string $message, int $statusCode = 400): ApiResource
+    {
+        return new ApiResource([
+            'error' => $message,
+        ], $statusCode);
+    }
+
     /** @return array<mixed> */
     protected function getJsonBody(): array
     {

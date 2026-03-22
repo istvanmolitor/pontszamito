@@ -77,7 +77,13 @@ async function fetchApiJson(path, requestInit) {
       const response = await fetch(endpoint, requestInit)
 
       if (!response.ok) {
-        lastError = new Error(`Hiba a lekérés során: ${response.status}`)
+        try {
+          const errorData = await response.json()
+          const errorMessage = errorData.error || `Hiba a lekérés során: ${response.status}`
+          lastError = new Error(errorMessage)
+        } catch (e) {
+          lastError = new Error(`Hiba a lekérés során: ${response.status}`)
+        }
         continue
       }
 
