@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Domain\AbstractUniversityProgram;
 use App\Domain\ExamSubjectResult;
 use App\Domain\LanguageExam;
 use App\Enums\ExamLevel;
@@ -20,6 +21,13 @@ final class ScoreCalculator
 
     /** @var list<LanguageExam> */
     private array $languageExams = [];
+
+    private AbstractUniversityProgram $universityProgram;
+
+    public function __construct(AbstractUniversityProgram $universityProgram)
+    {
+        $this->universityProgram = $universityProgram;
+    }
 
     public function addExamSubjectResult(string $subject, string $level, int $resultPercentage): void
     {
@@ -60,11 +68,7 @@ final class ScoreCalculator
     /** @return list<Subject> */
     public function getMandatorySubjects(): array
     {
-        return [
-            Subject::HUNGARIAN_LANGUAGE_AND_LITERATURE,
-            Subject::HISTORY,
-            Subject::MATHEMATICS,
-        ];
+        return $this->universityProgram->getMandatorySubjects();
     }
 
     public function validate(): void

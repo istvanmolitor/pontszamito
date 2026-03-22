@@ -276,6 +276,11 @@ async function calculateScore() {
   formSuccess.value = ''
   totalScore.value = null
 
+  if (!selectedUniversityProgram.value) {
+    formError.value = 'Válassz egy egyetemi szakot a pontszámítás előtt.'
+    return
+  }
+
   if (selectedSubjects.value.length === 0 && selectedLanguageExams.value.length === 0) {
     formError.value = 'Legalább egy tantárgyat vagy nyelvvizsgát hozzá kell adni a pontszámítás előtt.'
     return
@@ -288,6 +293,7 @@ async function calculateScore() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        universityProgram: selectedUniversityProgram.value,
         subjects: selectedSubjects.value,
         languageExams: selectedLanguageExams.value,
       }),
