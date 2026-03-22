@@ -20,8 +20,6 @@ final class ElteIkProgrammingProgram extends AbstractUniversityProgram
     public function getMandatorySubjects(): array
     {
         return [
-            Subject::HUNGARIAN_LANGUAGE_AND_LITERATURE,
-            Subject::HISTORY,
             Subject::MATHEMATICS,
         ];
     }
